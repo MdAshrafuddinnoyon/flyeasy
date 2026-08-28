@@ -439,4 +439,4 @@ Pull requests are welcome! For major changes, please open an issue first.
 
 ## 📄 License
 
-MIT © 2025 [FlyEasy Tourism](https://flyeasytourism.com) — Developed & maintained by [Web Search BD](https://websearchbd.com)
+MIT © 2026 [FlyEasy Tourism](https://flyeasytourism.com) — Developed & maintained by [Web Search BD](https://websearchbd.com)
