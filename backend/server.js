@@ -30,6 +30,25 @@ app.use((req, res, next) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
+const isInstalled = () => {
+  return !!process.env.DB_HOST;
+};
+
+app.get('/api/system-status', (req, res) => {
+  res.json({ installed: isInstalled() });
+});
+
+// Installation Route (only available if NOT installed)
+app.use('/api/install', require('./routes/install'));
+
+// Only mount other routes if installed
+app.use('/api', (req, res, next) => {
+  if (!isInstalled() && req.path !== '/install') {
+    return res.status(503).json({ error: 'App not installed. Please complete the setup.' });
+  }
+  next();
+});
+
 try {
   if (require('fs').existsSync(require('path').join(__dirname, 'routes', 'setup.js'))) {
     app.use('/setup', require('./routes/setup'));

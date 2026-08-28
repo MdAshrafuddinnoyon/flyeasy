@@ -64,6 +64,8 @@ import AuthModal from "@/components/AuthModal";
 import { SiteContent } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
+import InstallationWizard from '@/pages/InstallationWizard';
+
 function withAdminLayout(Page) {
   return (
     <ProtectedRoute adminOnly>
@@ -74,6 +76,7 @@ function withAdminLayout(Page) {
 
 export default function App() {
   const [adminSlug, setAdminSlug] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(null);
 
   useEffect(() => {
     AOS.init({
@@ -82,13 +85,41 @@ export default function App() {
       easing: 'ease-out-cubic',
     });
 
-    SiteContent.get().then((data) => {
-      setAdminSlug(data.admin_url_slug || 'admin');
-    }).catch(err => {
-      console.error('Failed to load site content', err);
-      setAdminSlug('admin'); // Fallback
-    });
+    const checkInstall = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+        const res = await fetch(`${apiUrl}/system-status`);
+        const data = await res.json();
+        setIsInstalled(data.installed);
+        
+        if (data.installed) {
+          SiteContent.get().then((data) => {
+            setAdminSlug(data.admin_url_slug || 'admin');
+          }).catch(err => {
+            console.error('Failed to load site content', err);
+            setAdminSlug('admin'); // Fallback
+          });
+        }
+      } catch (err) {
+        console.error('Failed to check install status', err);
+        setIsInstalled(false);
+      }
+    };
+
+    checkInstall();
   }, []);
+
+  if (isInstalled === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isInstalled === false) {
+    return <InstallationWizard />;
+  }
 
   if (!adminSlug) {
     return (
