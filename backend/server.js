@@ -30,28 +30,39 @@ app.use((req, res, next) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-const isInstalled = () => {
-  return !!process.env.DB_HOST;
-};
-
-app.get('/api/system-status', (req, res) => {
-  res.json({ installed: isInstalled() });
-});
-
-// Installation Route (only available if NOT installed)
-app.use('/api/install', require('./routes/install'));
-
-// Only mount other routes if installed
-app.use('/api', (req, res, next) => {
-  if (!isInstalled() && req.path !== '/install') {
-    return res.status(503).json({ error: 'App not installed. Please complete the setup.' });
+app.get('/api/fix-urls', async (req, res) => {
+  try {
+    const pool = require('./config/db');
+    const liveUrl = 'https://flyeasytourism.com';
+    const oldUrl = 'http://localhost:4000';
+    const queries = [
+      `UPDATE site_content SET favicon_url = REPLACE(favicon_url, '${oldUrl}', '${liveUrl}'), logo_light_url = REPLACE(logo_light_url, '${oldUrl}', '${liveUrl}'), logo_dark_url = REPLACE(logo_dark_url, '${oldUrl}', '${liveUrl}'), email_logo_url = REPLACE(email_logo_url, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE packages SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}'), gallery = REPLACE(gallery, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE team_members SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE airlines SET logo_url = REPLACE(logo_url, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE partners SET logo_url = REPLACE(logo_url, '${oldUrl}', '${liveUrl}')`
+    ];
+    for (const q of queries) {
+      await pool.query(q).catch(e => console.error(e));
+    }
+    res.send("<h1>URLs Fixed!</h1><p>All localhost images have been updated to live URLs. <a href='/'>Go to website</a></p>");
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
   }
-  next();
 });
 
 try {
-  if (require('fs').existsSync(require('path').join(__dirname, 'routes', 'setup.js'))) {
+  const setupPath = require('path').join(__dirname, 'routes', 'setup.js');
+  if (require('fs').existsSync(setupPath) && process.env.INSTALLED !== 'true') {
     app.use('/setup', require('./routes/setup'));
+    
+    // Redirect all traffic to setup if setup.js exists
+    app.use((req, res, next) => {
+      if (!req.path.startsWith('/setup') && !req.path.startsWith('/uploads') && !req.path.includes('.')) {
+        return res.redirect('/setup');
+      }
+      next();
+    });
   }
 } catch (e) {}
 
@@ -144,8 +155,47 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path.startsWith('/setup')) {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(require('path').join(__dirname, 'public', 'index.html'));
+  
+  const indexPath = require('path').join(__dirname, 'public', 'index.html');
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.send('Frontend build not found. Please run npm run build in frontend directory and copy to backend/public.');
+  }
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`FlyEasy API listening on port ${PORT}`));
+
+// Auto-DB Installer on Startup
+const autoInstallDb = async () => {
+  try {
+    const pool = require('./config/db');
+    const [tables] = await pool.query("SHOW TABLES LIKE 'users'");
+    if (tables.length === 0) {
+      console.log('Database empty! Running automatic auto-importer...');
+      const fs = require('fs');
+      const path = require('path');
+      const sqlPath = path.join(__dirname, 'install.sql');
+      if (fs.existsSync(sqlPath)) {
+        const sql = fs.readFileSync(sqlPath, 'utf8');
+        const db = await require('mysql2/promise').createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASS || process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+          multipleStatements: true
+        });
+        await db.query(sql);
+        await db.end();
+        console.log('Database imported successfully!');
+      }
+    }
+  } catch (err) {
+    console.error('Auto-importer error:', err.message);
+  }
+};
+
+app.listen(PORT, async () => {
+  console.log(`FlyEasy API listening on port ${PORT}`);
+  await autoInstallDb();
+});

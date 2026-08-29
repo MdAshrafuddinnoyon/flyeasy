@@ -31,7 +31,7 @@ function roundRect(doc, x, y, w, h, r = 4) {
 async function fetchLogoBase64(logoUrl) {
   try {
     if (!logoUrl) return null;
-    const fullUrl = logoUrl.startsWith('http') ? logoUrl : `http://localhost:4000${logoUrl}`;
+    const fullUrl = logoUrl.startsWith('http') ? logoUrl : `${window.location.origin}${logoUrl}`;
     const res = await fetch(fullUrl);
     const blob = await res.blob();
     return await new Promise((resolve) => {

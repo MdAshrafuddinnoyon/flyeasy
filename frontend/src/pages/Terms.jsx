@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Shield, Lock, Globe, Loader2 } from "lucide-react";
 import { Entities } from "@/lib/api";
 

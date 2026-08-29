@@ -1,9 +1,10 @@
+SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 DROP TABLE IF EXISTS `airlines`;
 CREATE TABLE `airlines` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `name` varchar(255) NOT NULL,
   `code` varchar(10) DEFAULT NULL,
   `logo_url` varchar(500) DEFAULT NULL,
@@ -29,7 +30,7 @@ INSERT INTO `airlines` (`id`, `name`, `code`, `logo_url`, `country`, `active`, `
 
 DROP TABLE IF EXISTS `announcements`;
 CREATE TABLE `announcements` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `title` varchar(255) DEFAULT NULL,
   `message` text NOT NULL,
   `type` enum('info','success','warning','promo') DEFAULT 'info',
@@ -46,7 +47,7 @@ INSERT INTO `announcements` (`id`, `title`, `message`, `type`, `link_url`, `acti
 
 DROP TABLE IF EXISTS `bookings`;
 CREATE TABLE `bookings` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `user_id` char(36) DEFAULT NULL,
   `package_id` char(36) DEFAULT NULL,
   `package_title` varchar(255) DEFAULT NULL,
@@ -182,7 +183,7 @@ INSERT INTO `faqs` (`id`, `question`, `answer`, `category`, `sort_order`, `activ
 
 DROP TABLE IF EXISTS `favorites`;
 CREATE TABLE `favorites` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `user_id` char(36) NOT NULL,
   `item_id` char(36) NOT NULL,
   `item_type` enum('package','hotel') NOT NULL,
@@ -227,7 +228,7 @@ INSERT INTO `flights` (`id`, `airline_id`, `airline_name`, `flight_code`, `origi
 
 DROP TABLE IF EXISTS `hotels`;
 CREATE TABLE `hotels` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `name` varchar(255) NOT NULL,
   `location` varchar(255) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
@@ -269,7 +270,7 @@ CREATE TABLE `newsletter_subscribers` (
 
 DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `user_email` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
   `message` text NOT NULL,
@@ -288,7 +289,7 @@ INSERT INTO `notifications` (`id`, `user_email`, `title`, `message`, `is_read`, 
 
 DROP TABLE IF EXISTS `packages`;
 CREATE TABLE `packages` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `title` varchar(255) NOT NULL,
   `slug` varchar(255) DEFAULT NULL,
   `destination` varchar(255) DEFAULT NULL,
@@ -333,7 +334,7 @@ INSERT INTO `packages` (`id`, `title`, `slug`, `destination`, `country`, `short_
 
 DROP TABLE IF EXISTS `pages`;
 CREATE TABLE `pages` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `title` varchar(255) NOT NULL,
   `slug` varchar(255) NOT NULL,
   `content` text DEFAULT NULL,
@@ -353,7 +354,7 @@ INSERT INTO `pages` (`id`, `title`, `slug`, `content`, `status`, `created_at`, `
 
 DROP TABLE IF EXISTS `partners`;
 CREATE TABLE `partners` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `name` varchar(255) NOT NULL,
   `logo_url` varchar(500) DEFAULT NULL,
   `active` tinyint(1) DEFAULT 1,
@@ -374,7 +375,7 @@ INSERT INTO `partners` (`id`, `name`, `logo_url`, `active`, `sort_order`, `creat
 
 DROP TABLE IF EXISTS `payment_methods`;
 CREATE TABLE `payment_methods` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `method_type` enum('bank','bkash','nagad','sslcommerz','other') NOT NULL,
   `label` varchar(255) DEFAULT NULL,
   `account_name` varchar(255) DEFAULT NULL,
@@ -395,7 +396,7 @@ CREATE TABLE `payment_methods` (
 
 DROP TABLE IF EXISTS `promotions`;
 CREATE TABLE `promotions` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `title` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `image_url` varchar(500) DEFAULT NULL,
@@ -416,7 +417,7 @@ INSERT INTO `promotions` (`id`, `title`, `description`, `image_url`, `coupon_cod
 
 DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `user_id` char(36) DEFAULT NULL,
   `customer_name` varchar(255) DEFAULT NULL,
   `item_id` char(36) NOT NULL,
@@ -435,7 +436,7 @@ INSERT INTO `reviews` (`id`, `user_id`, `customer_name`, `item_id`, `item_type`,
 
 DROP TABLE IF EXISTS `site_content`;
 CREATE TABLE `site_content` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `hero_badge` varchar(255) DEFAULT NULL,
   `hero_headline` varchar(500) DEFAULT NULL,
   `hero_subheadline` varchar(500) DEFAULT NULL,
@@ -511,7 +512,7 @@ INSERT INTO `team_members` (`id`, `name`, `role`, `image_url`, `bio`, `sort_orde
 
 DROP TABLE IF EXISTS `testimonials`;
 CREATE TABLE `testimonials` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `name` varchar(255) NOT NULL,
   `trip` varchar(255) DEFAULT NULL,
   `text` text DEFAULT NULL,
@@ -539,7 +540,7 @@ INSERT INTO `testimonials` (`id`, `name`, `trip`, `text`, `rating`, `avatar_url`
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
+  `id` char(36) NOT NULL ,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
@@ -559,3 +560,5 @@ INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `reward_poi
 ('ac6a9b01-0dd6-4d63-a085-3bd1aca40028', 'Test Client', 'client@flyeasy.com', '$2a$10$6iizuEmdLGIDDg8s4f8M6.YzWopanYVTFWEw5oF4uyAULRg.d4B7q', 'client', 0, '2026-08-23 19:17:58', '2026-08-28 15:29:50', '01681160730', '/uploads/1787623370518-172076180.png'),
 ('eb6be585-9e77-11f1-82b3-50fc00092ecc', 'Customer User', 'customer@example.com', '$2a$10$QXLAZ7GScXpRooNwtzyOTOO/MGf7dRtUsoFhWk9SyEquAXRmbDsTG', '', 0, '2026-08-22 22:22:10', '2026-08-23 01:02:23', '01800000000', NULL);
 
+
+SET FOREIGN_KEY_CHECKS=1;

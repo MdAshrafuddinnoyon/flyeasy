@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Youtube, Linkedin, MapPin, Headphones, Globe } from "lucide-react";
+import { Facebook, Twitter, Instagram, Youtube, Linkedin, MapPin, Mail, Phone, Plane, ShieldCheck, HeartHandshake, Headphones, Globe, ArrowRight } from "lucide-react";
+import DeveloperCredit from "./DeveloperCredit";
 import Logo from "@/components/Logo";
 import { SiteContent } from "@/lib/api";
 
@@ -163,14 +164,12 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/20 hidden sm:block">|</p>
-            {content.developer_name && (
-              <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
-                <span className="text-slate-500 text-xs">Maintained by</span>
-                <a href={content.developer_website || "#"} target="_blank" rel="noopener noreferrer" className="text-white hover:text-red-500 transition-colors">
-                  {content.developer_name}
-                </a>
-              </div>
-            )}
+            <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
+              <span className="text-slate-500 text-xs">Developed by</span>
+              <a href="https://websearchbd.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-red-500 transition-colors font-semibold text-sm">
+                Web Search BD
+              </a>
+            </div>
           </div>
         </div>
       </div>
