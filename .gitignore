@@ -1,34 +1,3 @@
-# Node
+
+*.zip
 node_modules/
-npm-debug.log*
-
-# Environment
-.env
-backend/.env
-
-# Build output
-frontend/dist/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Uploads (user-generated content — don't commit)
-backend/public/uploads/*
-!backend/public/uploads/.gitkeep
-
-# Temp/deploy artifacts
-backend/flyeasy_deploy.zip
-backend/temp_deploy/
-
-# IDE
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-
-# Logs
-*.log
-logs/
