@@ -15,7 +15,11 @@ export default function ImagePicker({ value, onChange, label = "Image URL", clas
         {/* Preview Area */}
         {value ? (
           <div className="relative w-full max-w-xs aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+            {value.endsWith('.mp4') || value.endsWith('.webm') ? (
+              <video src={value} className="w-full h-full object-cover" muted playsInline />
+            ) : (
+              <img src={value} alt="Preview" className="w-full h-full object-cover" />
+            )}
             <div className="absolute top-2 right-2 flex gap-2">
               <button
                 type="button"
@@ -40,7 +44,7 @@ export default function ImagePicker({ value, onChange, label = "Image URL", clas
             className="w-full max-w-xs h-32 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary transition-colors hover:bg-primary/5"
           >
             <ImageIcon size={24} className="mb-2" />
-            <span className="text-sm font-medium">Select or Upload Image</span>
+            <span className="text-sm font-medium">Select or Upload Media</span>
           </button>
         )}
 
@@ -50,7 +54,7 @@ export default function ImagePicker({ value, onChange, label = "Image URL", clas
             type="text"
             value={value || ""}
             readOnly
-            placeholder="No image selected"
+            placeholder="No media selected"
             className="flex-1 px-3 py-2 text-sm rounded-lg border border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 cursor-not-allowed focus:outline-none"
           />
         </div>

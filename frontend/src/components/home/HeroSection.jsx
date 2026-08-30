@@ -11,9 +11,20 @@ export default function HeroSection({ content, featured }) {
 
   return (
     <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-20 lg:pt-48 lg:pb-28 overflow-hidden min-h-[80vh] flex flex-col justify-center">
-      {/* Dynamic Background Image */}
+      {/* Dynamic Background Image or Video */}
       <div className="absolute inset-0 z-0">
-        <img src={bgImage} alt="Hero Background" className="w-full h-full object-cover" />
+        {content?.home_hero_type === 'video' && content?.hero_video_url ? (
+          <video 
+            src={content.hero_video_url} 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <img src={bgImage} alt="Hero Background" className="w-full h-full object-cover" />
+        )}
       </div>
       {/* Strong dark overlay so white text is always readable */}
       <div className="absolute inset-0 bg-black/60 pointer-events-none z-0" />
@@ -43,7 +54,10 @@ export default function HeroSection({ content, featured }) {
               <div className="absolute top-4 -left-6 w-full h-[110%] bg-accent rounded-[3rem] -rotate-3 z-0 shadow-xl" />
               <div className="absolute top-10 -right-4 w-full h-[90%] bg-primary rounded-[3rem] rotate-6 z-0" />
               
-              <div className="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/20">
+              <div 
+                className="relative z-10 overflow-hidden shadow-2xl border-4 border-white/20"
+                style={{ borderRadius: content?.hero_border_radius !== undefined ? `${content.hero_border_radius}px` : '40px' }}
+              >
               <Image
                 src={featured?.image_url || content?.hero_image_url || FALLBACK_HERO}
                 alt={featured?.title || "Travel"}

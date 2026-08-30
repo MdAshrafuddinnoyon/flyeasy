@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function MobileBottomNav() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, setShowAuthModal } = useAuth();
 
   const navItems = [
     { label: "Home", to: "/", icon: Home },
@@ -22,13 +22,11 @@ export default function MobileBottomNav() {
       <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-[#0a0a0c] border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
         <div className="flex justify-around items-center h-16 px-2">
           {navItems.map((item) => {
+            const isAccount = item.label === "Account";
             const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to));
-            return (
-              <Link
-                key={item.label}
-                to={item.to}
-                className="flex flex-col items-center justify-center w-full h-full space-y-1 relative group"
-              >
+            
+            const content = (
+              <>
                 <div className={cn(
                   "p-1 rounded-full transition-all duration-300",
                   isActive ? "bg-red-50 text-red-500 scale-110" : "text-slate-500 dark:text-slate-400 group-hover:text-red-400"
@@ -44,6 +42,31 @@ export default function MobileBottomNav() {
                 {isActive && (
                   <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-red-500 rounded-b-full shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
                 )}
+              </>
+            );
+
+            if (isAccount && !user) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowAuthModal(true);
+                  }}
+                  className="flex flex-col items-center justify-center w-full h-full space-y-1 relative group bg-transparent border-none"
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.label}
+                to={item.to}
+                className="flex flex-col items-center justify-center w-full h-full space-y-1 relative group"
+              >
+                {content}
               </Link>
             );
           })}

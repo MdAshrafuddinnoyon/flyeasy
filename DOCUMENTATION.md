@@ -81,3 +81,8 @@ FlyEasy is designed for zero-configuration auto-deployment on shared hosting pla
 ## Maintenance
 - Node.js version 18.x or 22.x is recommended.
 - File uploads are stored locally in `backend/public/uploads`. Ensure this folder has write permissions in production (CHMOD 755).
+
+## Intellectual Property & License
+This is proprietary software built for **FlyEasy Tourism**. 
+**All intellectual property rights, source code ownership, and licensing rights are retained exclusively by the Developer Company (Md Ashraf Uddin Noyon / Developer Team).** 
+This code may not be distributed, resold, or sublicensed without explicit permission from the original developers.

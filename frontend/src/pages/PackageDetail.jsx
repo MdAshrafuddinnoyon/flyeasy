@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Star, MapPin, Clock, Check, X, ArrowLeft, Calendar, Users, Phone, Mail, User, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Star, MapPin, Clock, Check, X, ArrowLeft, Calendar, Users, Phone, Mail, User, ShieldCheck, BarChart2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ThankYouModal from "@/components/ThankYouModal";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { Entities } from '@/lib/api';
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 import PlaneFlyOverlay from "@/components/PlaneFlyOverlay";
-
+import { useCompare } from "@/context/CompareContext";
 import { useAuth } from "@/context/AuthContext";
 
 export default function PackageDetail() {
@@ -16,6 +16,7 @@ const { id } = useParams();
 const navigate = useNavigate();
 const { toast } = useToast();
 const { user, setShowAuthModal } = useAuth();
+const { addToCompare } = useCompare();
 
 const { data: pkg, isLoading: loading } = useQuery({
   queryKey: ['package', id],
@@ -54,12 +55,14 @@ useEffect(() => {
 const [submitting, setSubmitting] = useState(false);
 const [flying, setFlying] = useState(false);
 const [showThankYou, setShowThankYou] = useState(false);
+const [createdBooking, setCreatedBooking] = useState(null);
 
 const gallery = pkg?.gallery?.length ? pkg.gallery : [pkg?.image_url].filter(Boolean);
 
 const bookingMutation = useMutation({
   mutationFn: (newBooking) => Entities.bookings.create(newBooking),
-  onSuccess: () => {
+  onSuccess: (data) => {
+    setCreatedBooking(data);
     setFlying(true);
     toast({ title: "Booking request submitted! We'll contact you shortly." });
     setBooking({ customer_name: "", customer_email: "", customer_phone: "", travel_date: "", number_of_travelers: 1, message: "" });
@@ -157,6 +160,12 @@ activeImage === i ? "border-primary" : "border-transparent opacity-70"
                 {pkg.category && (
                   <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">{pkg.category}</span>
                 )}
+                <button 
+                  onClick={() => addToCompare({ type: 'package', id: pkg.id, title: pkg.title, price: pkg.price, image: pkg.image_url, duration: `${pkg.duration_days} Days` })}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary text-xs font-semibold transition-all"
+                >
+                  <BarChart2 size={14} /> Compare
+                </button>
               </div>
 
               {/* Description — render HTML properly */}
@@ -319,6 +328,7 @@ activeImage === i ? "border-primary" : "border-transparent opacity-70"
   title="Thank You!" 
   message="Your booking request has been successfully submitted." 
   subMessage="Our team will contact you shortly to confirm the details." 
+  booking={createdBooking}
 />
 </div>
 );

@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Search, Pencil, Trash2, Save, Loader2, Code, Layout as LayoutIcon } from "lucide-react";
-import { Entities } from "@/lib/api";
+import { Entities, SiteContent } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Pagination from "@/components/admin/Pagination";
+import ImagePicker from "@/components/admin/ImagePicker";
+import { useSiteContent } from "@/context/SiteContext";
 
 const EMPTY = { title: "", slug: "", content: "", status: "published" };
 
 export default function AdminPages() {
+  const [activeTab, setActiveTab] = useState("covers");
+  const [siteData, setSiteDataState] = useState({});
+  const [savingSite, setSavingSite] = useState(false);
+  const { setSiteData } = useSiteContent();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -27,6 +33,8 @@ export default function AdminPages() {
     try {
       const data = await Entities.pages.list();
       setPages(data);
+      const sData = await SiteContent.get();
+      if(sData) setSiteDataState(sData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -35,6 +43,19 @@ export default function AdminPages() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleSaveSite = async () => {
+    setSavingSite(true);
+    try {
+      await SiteContent.update(siteData);
+      setSiteData(siteData); // update context
+      toast({ title: "Page covers saved successfully" });
+    } catch (e) {
+      toast({ title: "Failed to save", variant: "destructive" });
+    } finally {
+      setSavingSite(false);
+    }
+  };
 
   const filtered = pages.filter(p => !search || p.title?.toLowerCase().includes(search.toLowerCase()));
 
@@ -84,16 +105,146 @@ export default function AdminPages() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-deep-space dark:text-white">Custom Pages</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage dynamic pages like Terms & Conditions</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-deep-space dark:text-white">Page Control</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage page covers and custom dynamic pages.</p>
         </div>
-        <Button onClick={openNew} className="bg-primary hover:bg-primary/90"><Plus size={18} /> Add Page</Button>
+        {activeTab === "custom" && (
+          <Button onClick={openNew} className="bg-primary hover:bg-primary/90"><Plus size={18} /> Add Page</Button>
+        )}
       </div>
 
-      <div className="relative mb-6 max-w-md">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Search pages..." className={inputCls + " pl-11"} />
+      <div className="flex gap-4 border-b border-border dark:border-slate-800 mb-6">
+        <button onClick={() => setActiveTab("covers")} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === "covers" ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-deep-space dark:hover:text-white"}`}>Built-in Page Covers</button>
+        <button onClick={() => setActiveTab("custom")} className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === "custom" ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-deep-space dark:hover:text-white"}`}>Custom Pages</button>
       </div>
+
+      {activeTab === "covers" && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 space-y-6">
+            <h2 className="text-lg font-bold text-deep-space dark:text-white">Hero Section Images</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 border-b border-border dark:border-slate-800 pb-8 mb-8">
+              <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 shadow-sm">
+              <h3 className="text-lg font-bold text-deep-space dark:text-white mb-4">Home Page Hero Settings</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Hero Media Type</label>
+                  <select
+                    value={siteData.home_hero_type || 'image'}
+                    onChange={(e) => setSiteDataState(prev => ({...prev, home_hero_type: e.target.value}))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:border-primary text-deep-space dark:text-white"
+                  >
+                    <option value="image">Image (Default)</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Hero Media Source</label>
+                  {siteData.home_hero_type === 'video' ? (
+                    <ImagePicker label="" value={siteData.hero_video_url || ""} onChange={(v) => setSiteDataState(prev => ({...prev, hero_video_url: v}))} />
+                  ) : (
+                    <ImagePicker value={siteData.hero_image_url || ""} onChange={(v) => setSiteDataState(prev => ({...prev, hero_image_url: v}))} />
+                  )}
+                </div>
+
+                <div className="space-y-2 sm:col-span-2 max-w-sm">
+                  <label className="text-sm font-semibold text-deep-space dark:text-slate-200 flex justify-between">
+                    Hero Image Border Radius 
+                    <span className="text-primary font-bold">{siteData.hero_border_radius || 40}px</span>
+                  </label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="80" 
+                    step="4"
+                    value={siteData.hero_border_radius || 40} 
+                    onChange={(e) => setSiteDataState(prev => ({...prev, hero_border_radius: e.target.value}))} 
+                    className="w-full accent-primary" 
+                  />
+                  <p className="text-xs text-slate-500">Adjust the curve of the floating hero image on the home page.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+                { key: 'flights_hero_url', label: 'Flights Page Hero' },
+                { key: 'hotels_hero_url', label: 'Hotels Page Hero' },
+                { key: 'packages_hero_url', label: 'Packages Page Hero' },
+                { key: 'promotions_hero_url', label: 'Promotions Page Hero' },
+                { key: 'about_hero_url', label: 'About Page Hero' },
+                { key: 'contact_hero_url', label: 'Contact Page Hero' },
+                { key: 'cta_bg_image_url', label: 'Home Page CTA Background' },
+                { key: 'process_bg_image_url', label: 'Home Page Process Background' },
+                { key: 'not_found_bg_url', label: '404 Error Page Background' },
+              ].map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <label className="text-sm font-semibold text-deep-space dark:text-slate-200">{field.label}</label>
+                  <ImagePicker value={siteData[field.key] || ""} onChange={(v) => setSiteDataState(prev => ({...prev, [field.key]: v}))} />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-deep-space dark:text-white mb-4">Home Page: Services Section</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Headline</label>
+                    <input value={siteData.services_headline || ""} onChange={(e) => setSiteDataState(prev => ({...prev, services_headline: e.target.value}))} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="e.g. Your Trusted Partner for Flights, Holidays & Travel" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Sub-headline</label>
+                    <textarea value={siteData.services_subheadline || ""} onChange={(e) => setSiteDataState(prev => ({...prev, services_subheadline: e.target.value}))} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="FlyEasy helps you book flights..." rows={3} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Card Title</label>
+                    <input value={siteData.services_card_title || ""} onChange={(e) => setSiteDataState(prev => ({...prev, services_card_title: e.target.value}))} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="Travel stress? Leave it to us" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Card Subtitle</label>
+                    <input value={siteData.services_card_subtitle || ""} onChange={(e) => setSiteDataState(prev => ({...prev, services_card_subtitle: e.target.value}))} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="fly easy" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Card Description</label>
+                    <textarea value={siteData.services_card_desc || ""} onChange={(e) => setSiteDataState(prev => ({...prev, services_card_desc: e.target.value}))} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" placeholder="From affordable flight deals to luxury resorts..." rows={3} />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Left Image 1 (Top)</label>
+                    <ImagePicker value={siteData.services_img_left_1 || ""} onChange={(v) => setSiteDataState(prev => ({...prev, services_img_left_1: v}))} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Left Image 2 (Bottom)</label>
+                    <ImagePicker value={siteData.services_img_left_2 || ""} onChange={(v) => setSiteDataState(prev => ({...prev, services_img_left_2: v}))} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Right Image</label>
+                    <ImagePicker value={siteData.services_img_right || ""} onChange={(v) => setSiteDataState(prev => ({...prev, services_img_right: v}))} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="pt-4">
+              <Button onClick={handleSaveSite} disabled={savingSite} className="bg-primary hover:bg-primary/90 px-8 py-2.5">
+                {savingSite ? <><Loader2 size={18} className="animate-spin mr-2" /> Saving...</> : <><Save size={18} className="mr-2" /> Save Covers</>}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "custom" && (
+        <>
+          <div className="relative mb-6 max-w-md">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Search pages..." className={inputCls + " pl-11"} />
+          </div>
 
       {loading ? (
         <div className="space-y-4">
@@ -127,6 +278,8 @@ export default function AdminPages() {
           <p className="text-slate-500 dark:text-slate-400 mb-4">No custom pages yet.</p>
           <Button onClick={openNew} className="bg-primary"><Plus size={18} /> Create your first page</Button>
         </div>
+      )}
+      </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -5,8 +5,8 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import WhatsAppSupport from "@/components/WhatsAppSupport";
 import MobileBottomNav from "@/components/MobileBottomNav";
-
 import CookieConsent from "@/components/CookieConsent";
+import TripPanel from "@/components/TripPanel";
 
 export default function Layout() {
   return (
@@ -22,6 +22,7 @@ export default function Layout() {
       <WhatsAppSupport />
       <MobileBottomNav />
       <CookieConsent />
+      <TripPanel />
     </div>
   );
 }

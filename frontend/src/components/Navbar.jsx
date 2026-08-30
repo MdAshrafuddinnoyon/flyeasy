@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Plane, Hotel, Map, ChevronDown, User, ShieldCheck } from "lucide-react";
+import { Menu, X, Plane, Hotel, Map, ChevronDown, User, ShieldCheck, BarChart2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useCompare } from "@/context/CompareContext";
+import { useTrip } from "@/context/TripContext";
 import { SiteContent } from "@/lib/api";
 
 const NAV_LINKS = [
@@ -22,6 +24,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, setShowAuthModal } = useAuth();
+  const { compareItems } = useCompare();
+  const { tripItems, toggleTrip } = useTrip();
   const [headerLinks, setHeaderLinks] = useState([]);
 
   useEffect(() => {
@@ -107,6 +111,32 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
+          {compareItems.length > 0 && (
+            <button
+              onClick={() => navigate("/compare")}
+              className="relative p-2 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+              title="Compare Items"
+            >
+              <BarChart2 size={20} />
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full transform translate-x-1 -translate-y-1">
+                {compareItems.length}
+              </span>
+            </button>
+          )}
+
+          <button
+            onClick={toggleTrip}
+            className="relative p-2 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+            title="My Trip"
+          >
+            <Map size={20} />
+            {tripItems.length > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full transform translate-x-1 -translate-y-1 shadow-sm">
+                {tripItems.length}
+              </span>
+            )}
+          </button>
+
           <ThemeToggle className="w-9 h-9 rounded-full flex items-center justify-center transition-all text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10" />
           <button
             onClick={handlePortalClick}
@@ -122,13 +152,25 @@ export default function Navbar() {
           </button>
         </div>
 
-        <button
-          className="lg:hidden p-2 rounded-lg transition-colors text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu size={24} />
-        </button>
+          <button
+            onClick={toggleTrip}
+            className="lg:hidden relative p-2 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors ml-auto mr-2"
+          >
+            <Map size={22} />
+            {tripItems.length > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full transform translate-x-1 -translate-y-1">
+                {tripItems.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            className="lg:hidden p-2 rounded-lg transition-colors text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
       </div>
 
       </header>
@@ -164,6 +206,13 @@ export default function Navbar() {
             
             <div className="my-4 border-t border-border dark:border-slate-800" />
             
+            {compareItems.length > 0 && (
+              <button onClick={() => { setMobileOpen(false); navigate("/compare"); }} className="px-4 py-3.5 rounded-2xl text-deep-space dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between w-full text-left transition-all">
+                <span className="flex items-center gap-4"><BarChart2 size={20} className="text-primary" /> Compare Items</span>
+                <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{compareItems.length}</span>
+              </button>
+            )}
+
             <button onClick={() => { setMobileOpen(false); handlePortalClick(); }} className="px-4 py-3.5 rounded-2xl text-deep-space dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 w-full text-left transition-all">
               <User size={20} className="text-slate-400" /> {user ? "My Portal" : "Login / Register"}
             </button>

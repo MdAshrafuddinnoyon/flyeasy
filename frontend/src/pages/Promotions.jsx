@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Tag, Clock } from "lucide-react";
 import { Entities } from "@/lib/api";
 import { Image } from "@/components/ui/image";
+import { useSiteContent } from "@/context/SiteContext";
 
 const FALLBACK_PROMOTIONS = [
   { id: "p1", title: "Eid Special: 20% off Domestic Flights", description: "Book any domestic flight during the Eid holiday week and get 20% flat discount up to BDT 2000.", discount_text: "20% OFF", coupon_code: "EID2026", active: true, image_url: "/images/promo_eid_flight.jpg" },
@@ -11,6 +12,7 @@ const FALLBACK_PROMOTIONS = [
 ];
 
 export default function Promotions() {
+  const { siteData } = useSiteContent();
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ export default function Promotions() {
     <div className="bg-white dark:bg-[#0a0a0c] min-h-screen">
       {/* Hero Section */}
       <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden bg-slate-900">
-        <img src="/images/hero_packages.jpg" alt="Promotions" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+        <img src={siteData?.promotions_hero_url || "/images/hero_packages.jpg"} alt="Promotions" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
         <div className="absolute inset-0 bg-slate-900/60 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-semibold mb-3">

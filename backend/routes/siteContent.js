@@ -19,7 +19,12 @@ const CONTENT_COLUMNS = [
   'admin_url_slug',
   'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass',
   'email_sender_name', 'email_sender_email', 'email_logo_url',
-  'about_show_stats', 'about_show_team', 'about_show_certs', 'about_show_faqs', 'about_show_airlines', 'about_show_partners'
+  'about_show_stats', 'about_show_team', 'about_show_certs', 'about_show_faqs', 'about_show_airlines', 'about_show_partners',
+  'flights_hero_url', 'hotels_hero_url', 'packages_hero_url', 'promotions_hero_url', 'about_hero_url', 'contact_hero_url',
+  'cta_bg_image_url', 'process_bg_image_url', 'home_hero_type', 'hero_video_url', 'hero_border_radius',
+  'not_found_bg_url', 'reviews_auto_slide', 'rewards_active',
+  'services_headline', 'services_subheadline', 'services_card_title', 'services_card_subtitle', 'services_card_desc',
+  'services_img_left_1', 'services_img_left_2', 'services_img_right'
 ];
 
 // Site content is a singleton row — GET returns the first (only) row, creating a default if missing.

@@ -1,6 +1,8 @@
 {
   "name": "flyeasy-frontend",
   "private": true,
+  "author": "Md Ashraf Uddin Noyon / Developer Team",
+  "license": "UNLICENSED (Proprietary)",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

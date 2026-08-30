@@ -9,28 +9,27 @@ import ProcessSection from "@/components/home/ProcessSection";
 import ReviewsSection from "@/components/home/ReviewsSection";
 import Newsletter from "@/components/Newsletter";
 import HotelCard from "@/components/HotelCard";
+import { useSiteContent } from "@/context/SiteContext";
 
 export default function Home() {
 const [packages, setPackages] = useState([]);
 const [hotels, setHotels] = useState([]);
 const [partners, setPartners] = useState([]);
-const [content, setContent] = useState({});
+const { siteData: content } = useSiteContent();
 const [loading, setLoading] = useState(true);
 
 useEffect(() => {
 let mounted = true;
 (async () => {
 try {
-const [pkgs, htls, siteContentList, partnersList] = await Promise.all([
+const [pkgs, htls, partnersList] = await Promise.all([
 Entities.packages.list(),
 Entities.hotels.list(),
-SiteContent.get(),
 Entities.partners.list(),
 ]);
 if (mounted) {
 setPackages(pkgs);
 setHotels(htls);
-setContent(siteContentList || {});
 setPartners(partnersList.filter(p => p.active));
 }
 } catch (e) {
@@ -93,8 +92,8 @@ View all hotels <ArrowRight size={18} />
 
 {/* CTA */}
 <section className="py-16 sm:py-24 relative overflow-hidden bg-primary/5 dark:bg-slate-900">
-<img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000" alt="Travel" className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-30 mix-blend-multiply dark:mix-blend-overlay" />
-<div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-accent/80 dark:from-slate-900/90 dark:to-slate-900/90 pointer-events-none" />
+<img src={content?.cta_bg_image_url || "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000"} alt="Travel" className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-30 mix-blend-multiply dark:mix-blend-overlay" />
+<div className="absolute inset-0 bg-gradient-to-r from-primary/70 to-accent/60 dark:from-slate-900/80 dark:to-slate-900/80 pointer-events-none" />
 <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/20 rounded-full blur-3xl pointer-events-none" />
 <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10" data-aos="zoom-in">
 <h2 className="text-3xl sm:text-5xl font-bold text-white mb-5">Ready to take off?</h2>

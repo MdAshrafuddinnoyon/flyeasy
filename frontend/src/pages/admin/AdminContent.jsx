@@ -13,6 +13,7 @@ const DEFAULTS = {
   favicon_url: "",
   logo_light_url: "",
   logo_dark_url: "",
+  invoice_logo_url: "",
   hero_badge: "Bangladesh's effortless travel platform",
   hero_headline: "Find flights, hotels & holidays in one place",
   hero_subheadline: "Effortless booking, transparent pricing, and curated travel experiences — from Cox's Bazar to the Maldives.",
@@ -235,6 +236,7 @@ export default function AdminContent() {
                 <div></div>
                 <Field label="Logo (Light Mode — dark text on transparent)" k="logo_light_url" image  content={content} update={update} />
                 <Field label="Logo (Dark Mode — white text on transparent)" k="logo_dark_url" image  content={content} update={update} />
+                <div className="sm:col-span-2"><Field label="Invoice/PDF Logo (For Tickets & Receipts)" k="invoice_logo_url" image  content={content} update={update} /></div>
                 <div className="sm:col-span-2"><Field label="Favicon (32x32 PNG or ICO)" k="favicon_url" image  content={content} update={update} /></div>
               </div>
             </div>
@@ -353,6 +355,23 @@ export default function AdminContent() {
                 />
                 <label htmlFor="rewards_active" className="text-sm font-medium text-deep-space dark:text-white">
                   Enable Customer Rewards
+                </label>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-float p-6 border border-slate-100 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-deep-space dark:text-white mb-2 pb-3 border-b border-slate-100 dark:border-slate-800">Home Page Reviews Auto-Slide</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Control whether the reviews section on the homepage automatically slides.</p>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="reviews_auto_slide"
+                  checked={content.reviews_auto_slide !== false}
+                  onChange={e => update("reviews_auto_slide", e.target.checked)}
+                  className="w-5 h-5 accent-primary"
+                />
+                <label htmlFor="reviews_auto_slide" className="text-sm font-medium text-deep-space dark:text-white">
+                  Enable Reviews Auto-Slide
                 </label>
               </div>
             </div>

@@ -8,9 +8,11 @@ export default function ThankYouModal({
   onOpenChange, 
   title = "Thank You!", 
   message = "Your request has been successfully submitted.", 
-  subMessage = "We will get back to you as soon as possible." 
+  subMessage = "We will get back to you as soon as possible.",
+  booking = null
 }) {
   const [whatsapp, setWhatsapp] = useState('');
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -29,12 +31,49 @@ export default function ThankYouModal({
           <CheckCircle2 size={40} className="animate-in zoom-in duration-500" />
         </div>
         <DialogHeader>
-          <DialogTitle className="text-3xl font-extrabold text-deep-space dark:text-white mb-2">{title}</DialogTitle>
+          <DialogTitle className="text-3xl font-extrabold text-deep-space dark:text-white text-center mb-2">{title}</DialogTitle>
         </DialogHeader>
-        <div className="text-slate-600 dark:text-slate-400 mb-8 space-y-2 text-base">
+        <div className="text-slate-600 dark:text-slate-400 mb-6 space-y-2 text-base text-center">
           <p>{message}</p>
           <p>{subMessage}</p>
         </div>
+
+        {booking && (
+          <div className="mt-2 mb-6">
+            <p className="text-sm text-slate-500 mb-3 font-medium">Or confirm your booking instantly via Automated Gateway:</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-slate-600 dark:text-slate-300 font-medium">Total Amount</span>
+                <span className="text-xl font-bold text-primary">৳{Number(booking.total_price).toLocaleString()}</span>
+              </div>
+              <img src="/images/payment_gateways.jpg" alt="Payment Gateways" className="w-full h-auto rounded-xl mb-4 border border-slate-200 dark:border-slate-700 mix-blend-multiply dark:mix-blend-normal object-cover" style={{maxHeight: '60px'}} />
+              <button 
+                onClick={async () => {
+                  try {
+                    setPaying(true);
+                    const { api } = await import('@/lib/api');
+                    // In a real flow this hits /payment/init with existing booking ID or items
+                    // To keep it simple and reusing TripPanel logic:
+                    const res = await api.post("/payment/init", { 
+                      items: [{ title: booking.package_title, type: booking.item_type, price: booking.total_price }], 
+                      customer: { name: booking.customer_name, email: booking.customer_email, phone: booking.customer_phone }, 
+                      totalAmount: booking.total_price,
+                      bookingId: booking.id
+                    });
+                    if (res.url) window.location.href = res.url;
+                  } catch (e) {
+                    setPaying(false);
+                  }
+                }}
+                disabled={paying}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+              >
+                {paying ? "Redirecting to Secure Gateway..." : "Pay Online Now"}
+              </button>
+            </div>
+          </div>
+        )}
+
         
         {whatsapp && (
           <div className="mt-2 pt-6 border-t border-slate-100 dark:border-slate-800">

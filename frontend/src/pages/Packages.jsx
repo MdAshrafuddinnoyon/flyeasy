@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Entities } from '@/lib/api';
 import { Search, SlidersHorizontal, Map } from "lucide-react";
 import PackageCard from '@/components/PackageCard';
+import { useSiteContent } from "@/context/SiteContext";
 
 export default function Packages() {
+  const { siteData } = useSiteContent();
   const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get("q") || "");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("newest");
@@ -37,7 +39,7 @@ export default function Packages() {
     <div className="bg-white dark:bg-[#0a0a0c] min-h-screen">
       {/* Hero Section */}
       <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden bg-slate-900">
-        <img src="/images/hero_packages.jpg" alt="Holiday Packages" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+        <img src={siteData?.packages_hero_url || "/images/hero_packages.jpg"} alt="Holiday Packages" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
         <div className="absolute inset-0 bg-slate-900/60 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-semibold mb-3" data-aos="fade-down">

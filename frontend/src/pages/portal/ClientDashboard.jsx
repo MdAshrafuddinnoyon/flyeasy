@@ -47,7 +47,8 @@ setLoading(false);
 
 const today = new Date();
 const upcoming = bookings.find((b) => b.travel_date && new Date(b.travel_date) >= today && b.status !== "cancelled");
-const weatherCity = upcoming?.package_title || "Dhaka";
+// Extract city from destination if available, otherwise default to a reliable city like "Dhaka"
+const weatherCity = upcoming?.destination ? upcoming.destination.split(',')[0].trim() : "Dhaka";
 
 const handleLogout = () => {
   logout();
@@ -68,7 +69,7 @@ return (
 <PortalSidebar active={active} setActive={setActive} onLogout={handleLogout} />
 <div className="flex-1 min-w-0">
 <PortalHeader user={user} />
-{active === "overview" && <OverviewPanel user={user} bookings={bookings} announcements={announcements} weatherCity={weatherCity} />}
+{active === "overview" && <OverviewPanel user={user} bookings={bookings} announcements={announcements} weatherCity={weatherCity} onBookingClick={() => setActive('bookings')} />}
 {active === "bookings" && <BookingsPanel bookings={bookings} />}
 {active === "payments" && <PaymentsPanel paymentMethods={paymentMethods} />}
 {active === "reviews" && <ReviewsPanel user={user} bookings={bookings} />}

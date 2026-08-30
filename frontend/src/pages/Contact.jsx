@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Mail, Phone, MapPin, Send, MessageCircle, Clock, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ThankYouModal from "@/components/ThankYouModal";
+import { useSiteContent } from "@/context/SiteContext";
 import { SiteContent, api } from "@/lib/api";
 
 export default function Contact() {
   const { toast } = useToast();
+  const { siteData } = useSiteContent();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -56,8 +58,8 @@ export default function Contact() {
   return (
     <div className="bg-white dark:bg-[#0a0a0c] min-h-screen">
       {/* Hero Section */}
-      <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden bg-slate-900">
-        <img src="/images/hero_contact.jpg" alt="Contact Us" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+      <div className="relative pt-32 pb-24 overflow-hidden bg-slate-900">
+        <img src={siteData?.contact_hero_url || "/images/hero_contact.jpg"} alt="Contact Us" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
         <div className="absolute inset-0 bg-slate-900/60 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-semibold mb-3">

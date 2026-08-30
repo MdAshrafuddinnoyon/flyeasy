@@ -17,12 +17,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
-      cb(new Error('Not an image! Please upload an image.'), false);
+      cb(new Error('Invalid file type! Please upload an image or video.'), false);
     }
   }
 });
@@ -57,7 +57,7 @@ router.get('/', authRequired, adminRequired, (req, res) => {
     try {
       const files = fs.readdirSync(dirPath);
       return files
-        .filter(f => !f.startsWith('.') && (f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.gif') || f.endsWith('.webp')))
+        .filter(f => !f.startsWith('.') && (f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.gif') || f.endsWith('.webp') || f.endsWith('.mp4') || f.endsWith('.webm')))
         .map(f => {
           const stats = fs.statSync(path.join(dirPath, f));
           return {
@@ -90,6 +90,23 @@ router.get('/', authRequired, adminRequired, (req, res) => {
 
   const allImages = Array.from(allMap.values()).sort((a, b) => b.created_at - a.created_at);
   
+  // Pagination logic
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+  
+  if (!isNaN(page) && !isNaN(limit)) {
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedImages = allImages.slice(startIndex, endIndex);
+    return res.json({
+      data: paginatedImages,
+      total: allImages.length,
+      page,
+      limit,
+      totalPages: Math.ceil(allImages.length / limit)
+    });
+  }
+  
   res.json(allImages);
 });
 
@@ -103,13 +120,61 @@ router.delete('/:filename', authRequired, adminRequired, (req, res) => {
     return res.status(400).json({ error: 'Invalid filename' });
   }
   
-  const filePath = path.join(__dirname, '../public/uploads/', filename);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
+  const dirsToCheck = [
+    path.join(__dirname, '../public/uploads/'),
+    path.join(__dirname, '../public/images/'),
+    path.join(__dirname, '../../frontend/public/images/')
+  ];
+
+  let deleted = false;
+  for (const dir of dirsToCheck) {
+    const filePath = path.join(dir, filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      deleted = true;
+    }
+  }
+
+  if (deleted) {
     res.json({ message: 'File deleted successfully' });
   } else {
     res.status(404).json({ error: 'File not found' });
   }
+});
+
+// @route   POST /api/upload/bulk-delete
+// @desc    Delete multiple uploaded media files
+// @access  Admin
+router.post('/bulk-delete', authRequired, adminRequired, (req, res) => {
+  const { filenames } = req.body;
+  if (!Array.isArray(filenames)) {
+    return res.status(400).json({ error: 'filenames array is required' });
+  }
+
+  const dirsToCheck = [
+    path.join(__dirname, '../public/uploads/'),
+    path.join(__dirname, '../public/images/'),
+    path.join(__dirname, '../../frontend/public/images/')
+  ];
+
+  let deletedCount = 0;
+  for (const filename of filenames) {
+    if (!filename || filename.includes('..') || filename.includes('/')) {
+      continue; // Skip invalid filenames
+    }
+    
+    let fileDeleted = false;
+    for (const dir of dirsToCheck) {
+      const filePath = path.join(dir, filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        fileDeleted = true;
+      }
+    }
+    if (fileDeleted) deletedCount++;
+  }
+
+  res.json({ message: `Successfully deleted ${deletedCount} files.` });
 });
 
 module.exports = router;

@@ -9,6 +9,9 @@ import { useToast } from "@/components/ui/use-toast";
 import FlightSearchBar from "@/components/flights/FlightSearchBar";
 import { generateBookingPDF } from "@/lib/pdfGenerator";
 import LogoTicker from "@/components/LogoTicker";
+import { useCompare } from "@/context/CompareContext";
+import { useTrip } from "@/context/TripContext";
+import { useSiteContent } from "@/context/SiteContext";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +23,12 @@ import {
 export default function Flights() {
   const { toast } = useToast();
   const { user, setShowAuthModal } = useAuth();
+  const { addToCompare } = useCompare();
+  const { addToTrip } = useTrip();
+  const { siteData } = useSiteContent();
   const [urlParams] = useSearchParams();
   const [showThankYouModal, setShowThankYouModal] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [bookingForm, setBookingForm] = useState({
@@ -69,30 +76,36 @@ export default function Flights() {
     setShowBookingModal(true);
   };
 
-  const handleConfirmBooking = (e) => {
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
+    if (!user) {
+        setShowAuthModal(true);
+        return;
+    }
     if (!bookingForm.customer_name || !bookingForm.customer_email || !bookingForm.customer_phone) {
       toast({ title: "Please fill all required fields", variant: "destructive" });
       return;
     }
     
     setSubmitting(true);
-    Entities.bookings.create({
-      ...bookingForm,
-      package_id: selectedFlight.id,
-      package_title: selectedFlight.flight_code,
-      item_type: "flight",
-      total_price: selectedFlight.price * bookingForm.number_of_travelers,
-      status: "pending",
-    }).then((res) => {
+    try {
+      const data = await Entities.bookings.create({
+        ...bookingForm,
+        package_id: selectedFlight.id,
+        package_title: selectedFlight.flight_code,
+        item_type: "flight",
+        total_price: selectedFlight.price * bookingForm.number_of_travelers,
+        status: "pending",
+      });
+      setCreatedBooking(data);
       setSubmitting(false);
       setShowBookingModal(false);
-      setRecentBooking(res);
+      setRecentBooking(data);
       setShowThankYouModal(true);
-    }).catch(() => {
+    } catch {
       setSubmitting(false);
       toast({ title: "Failed to book flight.", variant: "destructive" });
-    });
+    }
   };
 
   const formatTime = (dateStr) => {
@@ -103,9 +116,9 @@ export default function Flights() {
   return (
     <div className="bg-white dark:bg-[#0a0a0c] min-h-screen">
       {/* Hero Section */}
-      <div className="relative pt-32 pb-24 sm:pt-40 sm:pb-32 overflow-hidden bg-slate-900">
-        <img src="/images/hero_flights.jpg" alt="Flights" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
-        <div className="absolute inset-0 bg-slate-900/60 pointer-events-none" />
+      <div className="relative pt-32 pb-20 bg-deep-space overflow-hidden">
+        <img src={siteData?.flights_hero_url || "/images/hero_flights.jpg"} alt="Flights" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-t from-deep-space via-deep-space/50 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <div className="inline-flex items-center gap-2 text-accent text-sm font-semibold mb-3">
             <Plane size={16} /> Flight Search
@@ -167,14 +180,22 @@ export default function Flights() {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between sm:justify-end gap-4">
-                  <div className="text-right">
+                <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-end gap-3 mt-4 sm:mt-0">
+                  <div className="text-center sm:text-right">
                     <div className="text-xs text-slate-500">Price</div>
                     <div className="text-xl font-bold text-primary">৳{f.price.toLocaleString()}</div>
                   </div>
-                  <button onClick={() => handleBookClick(f)} className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-medium transition-colors text-sm">
-                    Book Now
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => addToCompare({ type: 'flight', id: f.id, title: f.flight_code, price: f.price, image: '/images/hero_flights.jpg', duration: 'Flight' })} 
+                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary transition-all text-sm font-semibold whitespace-nowrap" title="Compare"
+                    >
+                      Compare
+                    </button>
+                    <button onClick={() => handleBookClick(f)} className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-medium transition-colors text-sm whitespace-nowrap">
+                      Book Now
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,36 +203,6 @@ export default function Flights() {
         </div>
       </div>
 
-      {/* Thank You Modal */}
-      <Dialog open={showThankYouModal} onOpenChange={setShowThankYouModal}>
-        <DialogContent className="sm:max-w-md text-center flex flex-col items-center py-10">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle2 size={32} className="text-green-600" />
-          </div>
-          <DialogHeader className="flex flex-col items-center">
-            <DialogTitle className="text-2xl font-bold">Booking Successful!</DialogTitle>
-            <DialogDescription className="text-base text-slate-500 max-w-[280px] mx-auto mt-2">
-              Thank you for booking with FlyEasy. Your flight reservation has been received.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-6 flex flex-col w-full gap-3">
-            <button 
-              onClick={() => {
-                if (recentBooking) generateBookingPDF(recentBooking, user, 'Flight').catch(console.error);
-              }}
-              className="flex items-center justify-center gap-2 bg-primary text-white w-full py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
-            >
-              <Download size={18} /> Download Ticket (PDF)
-            </button>
-            <button 
-              onClick={() => setShowThankYouModal(false)}
-              className="bg-slate-100 text-slate-700 w-full py-3 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Booking Form Modal */}
       <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>

@@ -60,11 +60,17 @@ export async function generateBookingPDF(booking, user, itemType = 'Package') {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
   const site = await getSiteInfo();
+  
+  // If Flight, use boarding pass layout
+  if (itemType.toLowerCase() === 'flight') {
+    return generateFlightBoardingPass(doc, booking, user, site);
+  }
+
   const bookingId = (booking.id || '').toString().substring(0, 8).toUpperCase() || ('PKG' + Math.floor(Math.random() * 100000));
   const bookingDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const travelDate = booking.travel_date ? new Date(booking.travel_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
   const statusText = (booking.status || 'pending').toUpperCase();
-  const statusColor = booking.status === 'confirmed' || booking.status === 'paid' ? COLORS.success : booking.status === 'cancelled' ? [220, 38, 38] : COLORS.warning;
+  const statusColor = booking.status === 'confirmed' || booking.status === 'paid' || booking.status === 'completed' ? COLORS.success : booking.status === 'cancelled' ? [220, 38, 38] : COLORS.warning;
 
   // ── HEADER BANNER ────────────────────────────────────────────
   doc.setFillColor(...COLORS.primary);
@@ -75,7 +81,7 @@ export async function generateBookingPDF(booking, user, itemType = 'Package') {
   doc.rect(0, 50, PAGE_W, 2, 'F');
 
   // Try logo
-  const logoSrc = site.logo_light_url || site.logo_dark_url || null;
+  const logoSrc = site.invoice_logo_url || site.logo_light_url || site.logo_dark_url || null;
   let logoBase64 = logoSrc ? await fetchLogoBase64(logoSrc) : null;
 
   if (logoBase64) {
@@ -326,3 +332,160 @@ export async function generateBookingPDF(booking, user, itemType = 'Package') {
 
   doc.save(`FlyEasy_Ticket_${bookingId}.pdf`);
 }
+
+/**
+ * Generate a modern Boarding Pass style PDF for Flights
+ */
+async function generateFlightBoardingPass(doc, booking, user, site) {
+  let flightInfo = null;
+  if (booking.package_id) {
+    try {
+      const res = await api.get(`/flights/${booking.package_id}`);
+      flightInfo = res.data;
+    } catch {}
+  }
+
+  const bookingId = (booking.id || '').toString().substring(0, 8).toUpperCase() || ('FLT' + Math.floor(Math.random() * 100000));
+  
+  // Background
+  doc.setFillColor(240, 242, 245);
+  doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+
+  // Boarding Pass Card
+  const cardW = 140;
+  const cardH = 180;
+  const startX = (PAGE_W - cardW) / 2;
+  const startY = 40;
+
+  // Shadow/border effect
+  doc.setFillColor(220, 224, 230);
+  roundRect(doc, startX + 2, startY + 2, cardW, cardH, 5);
+  doc.setFillColor(255, 255, 255);
+  roundRect(doc, startX, startY, cardW, cardH, 5);
+
+  // Logo & Header
+  const logoSrc = site.logo_light_url || site.logo_dark_url;
+  let logoBase64 = logoSrc ? await fetchLogoBase64(logoSrc) : null;
+  if (logoBase64) {
+    try { doc.addImage(logoBase64, 'PNG', startX + (cardW / 2) - 20, startY + 10, 40, 16); } catch {}
+  } else {
+    doc.setTextColor(...COLORS.primary);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text(site.site_name || 'FlyEasy', PAGE_W / 2, startY + 20, { align: 'center' });
+  }
+
+  // Divider
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.5);
+  doc.line(startX + 10, startY + 35, startX + cardW - 10, startY + 35);
+
+  // Locations
+  const originStr = flightInfo?.origin || 'DAC';
+  const destStr = flightInfo?.destination || 'CXB';
+  const depCode = originStr.substring(0, 3).toUpperCase();
+  const arrCode = destStr.substring(0, 3).toUpperCase();
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('DEPARTURE', startX + 15, startY + 50);
+  doc.text('ARRIVAL', startX + cardW - 15, startY + 50, { align: 'right' });
+
+  doc.setFontSize(36);
+  doc.setTextColor(15, 23, 42);
+  doc.text(depCode, startX + 15, startY + 65);
+  doc.text(arrCode, startX + cardW - 15, startY + 65, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(148, 163, 184);
+  doc.text(originStr.toUpperCase(), startX + 15, startY + 72);
+  doc.text(destStr.toUpperCase(), startX + cardW - 15, startY + 72, { align: 'right' });
+
+  // Center plane
+  doc.setTextColor(...COLORS.primary);
+  doc.setFontSize(16);
+  // Using unicode airplane if possible, or just a simple > 
+  doc.text('✈', PAGE_W / 2, startY + 61, { align: 'center' });
+  doc.setDrawColor(...COLORS.primary);
+  doc.setLineDashPattern([2, 2], 0);
+  doc.line(startX + 50, startY + 60, startX + 65, startY + 60);
+  doc.line(startX + 75, startY + 60, startX + 90, startY + 60);
+  doc.setLineDashPattern([], 0);
+
+  // Times
+  const depTime = flightInfo?.departure_time ? new Date(flightInfo.departure_time) : new Date(booking.travel_date);
+  const arrTime = flightInfo?.arrival_time ? new Date(flightInfo.arrival_time) : new Date(depTime.getTime() + 2 * 60 * 60 * 1000);
+  
+  const formatDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+  const formatTime = (d) => d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text(formatDate(depTime), startX + 15, startY + 85);
+  doc.text('FLIGHT TIME', PAGE_W / 2, startY + 85, { align: 'center' });
+  doc.text(formatDate(arrTime), startX + cardW - 15, startY + 85, { align: 'right' });
+
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  doc.text(formatTime(depTime), startX + 15, startY + 90);
+  doc.text('2H 15M', PAGE_W / 2, startY + 90, { align: 'center' });
+  doc.text(formatTime(arrTime), startX + cardW - 15, startY + 90, { align: 'right' });
+
+  // Dashed tear line
+  const tearY = startY + 110;
+  doc.setFillColor(240, 242, 245);
+  // Cutout left
+  doc.circle(startX, tearY, 4, 'F');
+  // Cutout right
+  doc.circle(startX + cardW, tearY, 4, 'F');
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineDashPattern([4, 4], 0);
+  doc.setLineWidth(1);
+  doc.line(startX + 6, tearY, startX + cardW - 6, tearY);
+  doc.setLineDashPattern([], 0);
+
+  // Passenger Info
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text('PASSENGER', startX + 15, tearY + 15);
+  doc.setFontSize(14);
+  doc.setTextColor(...COLORS.primary);
+  doc.text((user?.name || booking.customer_name || 'GUEST').toUpperCase(), startX + 15, tearY + 23);
+
+  // Meta Info
+  const metas = [
+    { label: 'CLASS', value: 'ECONOMY' },
+    { label: 'FLIGHT NO', value: booking.package_title || 'BG-101' },
+    { label: 'GATE', value: 'TBD' },
+    { label: 'SEAT', value: 'AUTO' },
+  ];
+  
+  metas.forEach((m, i) => {
+    const mx = startX + 15 + (i * 28);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text(m.label, mx, tearY + 35);
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text(m.value, mx, tearY + 41);
+  });
+
+  // Simulated Barcode
+  doc.setFillColor(...COLORS.primary);
+  const barcodeY = tearY + 50;
+  const barcodeW = cardW - 30;
+  let currX = startX + 15;
+  for (let i = 0; i < 40; i++) {
+    const w = Math.random() * 2 + 0.5;
+    if (currX + w > startX + 15 + barcodeW) break;
+    doc.rect(currX, barcodeY, w, 8, 'F');
+    currX += w + Math.random() * 1.5 + 0.5;
+  }
+
+  doc.save(`FlyEasy_BoardingPass_${bookingId}.pdf`);
+}
+

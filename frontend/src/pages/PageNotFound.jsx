@@ -2,58 +2,64 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSiteContent } from "@/context/SiteContext";
 
 export default function PageNotFound() {
+  const { siteData } = useSiteContent();
+  const bgImage = siteData?.not_found_bg_url || "/images/hero_flights.jpg";
+
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Decorative background elements */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen animate-blob" />
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen animate-blob animation-delay-2000" />
-      
-      <div className="max-w-2xl w-full text-center relative z-10">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900">
+      {/* Dynamic Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src={bgImage} 
+          alt="404 Background" 
+          className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900/90 pointer-events-none" />
+      </div>
+
+      <div className="max-w-3xl w-full text-center relative z-10 px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          initial={{ scale: 0.8, opacity: 0, y: -50 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
         >
-          <h1 className="text-[150px] sm:text-[200px] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent select-none drop-shadow-sm">
+          <h1 className="text-[120px] sm:text-[180px] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20 select-none drop-shadow-2xl">
             404
           </h1>
         </motion.div>
         
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="bg-white/10 backdrop-blur-md border border-white/10 p-8 rounded-3xl shadow-2xl inline-block mt-4 w-full max-w-2xl mx-auto"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-deep-space dark:text-white mb-4">
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">
             Looks like you're lost in the clouds!
           </h2>
-          <p className="text-lg text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto">
-            The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+          <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-lg mx-auto">
+            The flight you are looking for might have been diverted, had its gate changed, or is temporarily unavailable. Let's get you back on track.
           </p>
-        </motion.div>
 
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <button 
-            onClick={() => window.history.back()} 
-            className="flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-deep-space dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors w-full sm:w-auto justify-center"
-          >
-            <ArrowLeft size={18} />
-            Go Back
-          </button>
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all w-full sm:w-auto justify-center"
-          >
-            <Home size={18} />
-            Back to Home
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button 
+              onClick={() => window.history.back()} 
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors w-full sm:w-auto justify-center"
+            >
+              <ArrowLeft size={18} />
+              Go Back
+            </button>
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all w-full sm:w-auto justify-center"
+            >
+              <Home size={18} />
+              Back to Home
+            </Link>
+          </div>
         </motion.div>
       </div>
     </div>

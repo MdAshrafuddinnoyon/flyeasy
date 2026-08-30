@@ -29,7 +29,7 @@ const NAV_GROUPS = [
       { slug: "promotions", label: "Promotions", icon: Tag },
       { slug: "airlines", label: "Airlines", icon: Plane },
       { slug: "partners", label: "Partners", icon: Globe },
-      { slug: "pages", label: "Custom Pages", icon: FileText },
+      { slug: "pages", label: "Page Control", icon: FileText },
     ]
   },
   {
@@ -47,6 +47,7 @@ const NAV_GROUPS = [
     label: "Commerce",
     items: [
       { slug: "bookings", label: "Bookings", icon: CalendarCheck },
+      { slug: "ticketing", label: "Air Ticketing", icon: PlaneTakeoff },
       { slug: "leads", label: "Customer Favorites", icon: Heart },
       { slug: "payment-methods", label: "Payment Methods", icon: CreditCard },
     ]

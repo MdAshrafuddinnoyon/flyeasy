@@ -4,7 +4,7 @@ import { Calendar, Plane, CheckCircle2, CloudSun, Bell, ArrowRight, Compass } fr
 import WeatherWidget from "@/components/WeatherWidget";
 import BookingRow from "./BookingRow";
 
-export default function OverviewPanel({ user, bookings, announcements, weatherCity }) {
+export default function OverviewPanel({ user, bookings, announcements, weatherCity, onBookingClick }) {
   const today = new Date();
   const stats = [
     { label: "Total Bookings", value: bookings.length, icon: Calendar },
@@ -44,7 +44,7 @@ export default function OverviewPanel({ user, bookings, announcements, weatherCi
             </div>
           ) : (
             <div className="space-y-2.5">
-              {bookings.slice(0, 5).map((b) => <BookingRow key={b.id} b={b} />)}
+              {bookings.slice(0, 5).map((b) => <BookingRow key={b.id} b={b} onClick={() => onBookingClick && onBookingClick(b)} />)}
             </div>
           )}
         </div>

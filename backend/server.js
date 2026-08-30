@@ -7,6 +7,7 @@ const bookingRoutes = require('./routes/bookings');
 const siteContentRoutes = require('./routes/siteContent');
 const emailRoutes = require('./routes/email');
 const reviewsRoutes = require('./routes/reviews');
+const paymentRoutes = require('./routes/payment');
 const {
   airlines, announcements, hotels, flights, packages, promotions, testimonials, paymentMethods, notifications, package_reviews,
   team_members, certifications, faqs, newsletter_subscribers, pages, email_templates, partners
@@ -90,6 +91,7 @@ app.use('/api/email-templates', email_templates);
 app.use('/api/newsletter-subscribers', newsletter_subscribers);
 app.use('/api/partners', partners);
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/payment', paymentRoutes);
 
 app.get('/api/newsletter-export', require('./middleware/auth').authRequired, require('./middleware/auth').adminRequired, async (req, res) => {
   try {

@@ -16,5 +16,7 @@ FlyEasy is a modern, full-stack travel and tourism platform built with React, No
 ## Installation
 For detailed installation instructions, please refer to `DOCUMENTATION.md`.
 
-## License
-Proprietary software for FlyEasy Tourism.
+## License & Intellectual Property
+This is proprietary software built for **FlyEasy Tourism**.
+**All intellectual property rights, source code ownership, and licensing rights are retained exclusively by the Developer Company (Md Ashraf Uddin Noyon / Developer Team).**
+This code may not be distributed, resold, or sublicensed without explicit permission from the original developers.

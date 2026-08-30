@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Star, MapPin, Check, ArrowLeft, Calendar, Users, Phone, Mail, User, CheckCircle2 } from "lucide-react";
+import { Star, MapPin, Check, ArrowLeft, Calendar, Users, Phone, Mail, User, CheckCircle2, BarChart2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ThankYouModal from "@/components/ThankYouModal";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -9,12 +9,14 @@ import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 import PlaneFlyOverlay from "@/components/PlaneFlyOverlay";
 import { useAuth } from "@/context/AuthContext";
+import { useCompare } from "@/context/CompareContext";
 
 export default function HotelDetail() {
 const { id } = useParams();
 const { toast } = useToast();
 const navigate = useNavigate();
 const { user, setShowAuthModal } = useAuth();
+const { addToCompare } = useCompare();
 
 const { data: hotel, isLoading: loading } = useQuery({
   queryKey: ['hotel', id],
@@ -33,17 +35,19 @@ React.useEffect(() => {
     }));
   }
 }, [user]);
-const [submitting, setSubmitting] = useState(false);
-const [flying, setFlying] = useState(false);
-const [showThankYou, setShowThankYou] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [flying, setFlying] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState(null);
 
-const bookingMutation = useMutation({
-  mutationFn: (newBooking) => Entities.bookings.create(newBooking),
-  onSuccess: () => {
-    setFlying(true);
-    toast({ title: "Booking request submitted! We'll contact you shortly." });
-    setBooking({ customer_name: "", customer_email: "", customer_phone: "", travel_date: "", number_of_travelers: 1, message: "" });
-  },
+  const bookingMutation = useMutation({
+    mutationFn: (newBooking) => Entities.bookings.create(newBooking),
+    onSuccess: (data) => {
+      setCreatedBooking(data);
+      setFlying(true);
+      toast({ title: "Booking request submitted! We'll contact you shortly." });
+      setBooking({ customer_name: "", customer_email: "", customer_phone: "", travel_date: "", number_of_travelers: 1, message: "" });
+    },
   onError: () => {
     toast({ title: "Something went wrong.", variant: "destructive" });
   },
@@ -108,6 +112,12 @@ return (
 <span className="font-semibold text-deep-space">{hotel.rating}</span>
 <span className="text-sm text-slate-400">({hotel.reviews_count} reviews)</span>
 </div>
+<button 
+  onClick={() => addToCompare({ type: 'hotel', id: hotel.id, title: hotel.name, price: hotel.price_per_night, image: hotel.image_url, rating: hotel.star_rating })}
+  className="flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary text-xs font-semibold transition-all"
+>
+  <BarChart2 size={14} /> Compare
+</button>
 </div>
 
 <p className="text-slate-600 leading-relaxed mb-8 whitespace-pre-line">{hotel.description}</p>
@@ -158,6 +168,7 @@ return (
   title="Thank You!" 
   message="Your booking request has been successfully submitted." 
   subMessage="Our team will contact you shortly to confirm the details." 
+  booking={createdBooking}
 />
 </div>
 );

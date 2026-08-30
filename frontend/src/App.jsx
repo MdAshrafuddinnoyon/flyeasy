@@ -17,6 +17,7 @@ import Promotions from '@/pages/Promotions';
 import PromotionDetail from '@/pages/PromotionDetail';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
+import Login from '@/pages/Login';
 import AdminLogin from '@/pages/AdminLogin';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -31,6 +32,9 @@ import Careers from '@/pages/Careers';
 import Testimonials from '@/pages/Testimonials';
 import CustomerSupport from '@/pages/CustomerSupport';
 import CookiePolicy from '@/pages/CookiePolicy';
+import Compare from '@/pages/Compare';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentFail from '@/pages/PaymentFail';
 import ThankYou from '@/pages/ThankYou';
 
 import ClientDashboard from '@/pages/portal/ClientDashboard';
@@ -58,6 +62,7 @@ import AdminFaqs from '@/pages/admin/AdminFaqs';
 import AdminNewsletter from '@/pages/admin/AdminNewsletter';
 import AdminEmailTemplates from '@/pages/admin/AdminEmailTemplates';
 import AdminMessages from '@/pages/admin/AdminMessages';
+import AdminTicketing from '@/pages/admin/AdminTicketing';
 
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -111,6 +116,10 @@ export default function App() {
           <Route path="/packages/:id" element={<PackageDetail />} />
           <Route path="/promotions" element={<Promotions />} />
           <Route path="/promotions/:id" element={<PromotionDetail />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/fail" element={<PaymentFail />} />
+          <Route path="/payment/cancel" element={<PaymentFail cancel={true} />} />
           <Route path="/about" element={<About />} />
           <Route path="/testimonials" element={<Testimonials />} />
           <Route path="/contact" element={<Contact />} />
@@ -123,6 +132,7 @@ export default function App() {
           <Route path="/customer-support" element={<CustomerSupport />} />
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/p/:slug" element={<CustomPage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -154,6 +164,7 @@ export default function App() {
         <Route path={`/${adminSlug}/announcements`} element={withAdminLayout(AdminAnnouncements)} />
         <Route path={`/${adminSlug}/users`} element={withAdminLayout(AdminUsers)} />
         <Route path={`/${adminSlug}/messages`} element={withAdminLayout(AdminMessages)} />
+        <Route path={`/${adminSlug}/ticketing`} element={withAdminLayout(AdminTicketing)} />
         {adminSlug !== 'admin' && <Route path="/admin" element={<Navigate to={`/${adminSlug}`} replace />} />}
       </Routes>
       <AuthModal />

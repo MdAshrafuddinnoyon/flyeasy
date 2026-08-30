@@ -2,7 +2,7 @@ import React from "react";
 import { Calendar, Users, MapPin, Plane, Compass, Download } from "lucide-react";
 import { generateBookingPDF } from "@/lib/pdfGenerator";
 
-export default function BookingRow({ b, onPay }) {
+export default function BookingRow({ b, onPay, onClick }) {
   const statusMap = {
     pending: "bg-amber-100 text-amber-700",
     confirmed: "bg-emerald-100 text-emerald-700",
@@ -13,14 +13,17 @@ export default function BookingRow({ b, onPay }) {
   const canPay = Number(b.total_price) > 0 && b.status === "pending";
 
   return (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-slate-50 border border-border">
+    <div 
+      className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-border dark:border-slate-800 cursor-pointer transition-colors"
+      onClick={() => onClick && onClick(b)}
+    >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
           <Icon size={16} className="text-primary" />
         </div>
         <div className="min-w-0">
-          <div className="font-semibold text-sm text-deep-space truncate">{b.package_title || "Booking"}</div>
-          <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+          <div className="font-semibold text-sm text-deep-space dark:text-white truncate">{b.package_title || "Booking"}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 flex-wrap">
             <span className="capitalize">{(b.item_type || "package").toLowerCase()}</span>
             {b.travel_date && (
               <span className="flex items-center gap-0.5">
@@ -37,23 +40,26 @@ export default function BookingRow({ b, onPay }) {
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {b.total_price > 0 && (
-          <span className="text-sm font-semibold text-deep-space hidden sm:inline">
+          <span className="text-sm font-semibold text-deep-space dark:text-white hidden sm:inline">
             ৳{b.total_price.toLocaleString()}
           </span>
         )}
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${statusMap[b.status] || "bg-slate-100 text-slate-600"}`}>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${statusMap[b.status] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
           {b.status}
         </span>
         {canPay && onPay && (
           <button
-            onClick={() => onPay(b)}
+            onClick={(e) => { e.stopPropagation(); onPay(b); }}
             className="text-xs font-semibold bg-primary text-white px-3 py-1.5 rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
           >
             Pay Now
           </button>
         )}
         <button
-          onClick={() => generateBookingPDF(b, { name: b.customer_name, email: b.customer_email, phone: b.customer_phone }, b.item_type || 'Package').catch(console.error)}
+          onClick={(e) => {
+            e.stopPropagation();
+            generateBookingPDF(b, { name: b.customer_name, email: b.customer_email, phone: b.customer_phone }, b.item_type || 'Package').catch(console.error);
+          }}
           title="Download Ticket (PDF)"
           className="p-1.5 rounded-full text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors shrink-0"
         >

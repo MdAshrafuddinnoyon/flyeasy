@@ -1,12 +1,14 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Search, FileText, Plane, Hotel, Camera, Heart } from "lucide-react";
+import { useSiteContent } from "@/context/SiteContext";
 
 export default function ProcessSection() {
   const navigate = useNavigate();
+  const { siteData } = useSiteContent();
 
   return (
-    <section className="relative pt-20 pb-0 lg:pt-32 overflow-hidden bg-white dark:bg-slate-900 min-h-[700px] flex flex-col justify-between">
+    <section className="relative pt-28 pb-0 lg:pt-40 overflow-hidden bg-white dark:bg-slate-900 flex flex-col justify-between">
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 w-full flex-grow">
         <div className="grid lg:grid-cols-2 gap-10 items-start">
@@ -96,11 +98,11 @@ export default function ProcessSection() {
       </div>
 
       {/* Background Mountain Layer */}
-      <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] mt-auto animate-fade-up" style={{ animationDelay: '0.6s' }}>
+      <div className="relative w-full h-[250px] sm:h-[350px] lg:h-[400px] mt-8 lg:-mt-10 animate-fade-up" style={{ animationDelay: '0.6s' }}>
         {/* Masking the mountain so it fades into white at the top */}
         <div className="absolute inset-0 bg-gradient-to-b from-white dark:from-slate-900 via-white/40 dark:via-slate-900/40 to-transparent z-10" />
         <img 
-          src="/images/hero_mountain_bg.jpg" 
+          src={siteData?.process_bg_image_url || "/images/hero_mountain_bg.jpg"} 
           alt="Mountains" 
           className="absolute inset-0 w-full h-full object-cover object-bottom"
         />

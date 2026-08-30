@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck, Clock4, Headset, Sparkles, Plane, Map, Hotel, ArrowRight, ChevronDown } from "lucide-react";
-import Marquee from "react-fast-marquee";
+import { PlaneTakeoff, Users, Globe, Target, MapPin, Award } from "lucide-react";
 import { Entities, SiteContent } from "@/lib/api";
+import { useSiteContent } from "@/context/SiteContext";
 
 import LogoTicker from "@/components/LogoTicker";
 
 export default function About() {
+  const { siteData } = useSiteContent();
   const [team, setTeam] = React.useState([]);
   const [certs, setCerts] = React.useState([]);
   const [faqs, setFaqs] = React.useState([]);
@@ -44,8 +46,8 @@ export default function About() {
   return (
 <div className="bg-white dark:bg-[#0a0a0c] min-h-screen">
 {/* Hero Section */}
-<div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden bg-slate-900">
-  <img src="/images/hero_mountain_bg.jpg" alt="About FlyEasy" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+<div className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 overflow-hidden bg-slate-900">
+  <img src={siteData?.about_hero_url || "/images/hero_packages.jpg"} alt="About Us" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
   <div className="absolute inset-0 bg-slate-900/60 pointer-events-none" />
   <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
     <div className="inline-flex items-center gap-2 text-accent text-sm font-semibold mb-3">

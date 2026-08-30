@@ -4,6 +4,8 @@ import { Plane, Hotel, Map, Train, ArrowRight } from "lucide-react";
 import { Image } from "@/components/ui/image";
 import LogoTicker from "@/components/LogoTicker";
 
+import { useSiteContent } from "@/context/SiteContext";
+
 const SERVICES = [
   { icon: Plane, title: "Flight Booking", desc: "Book domestic and international flights at the best fares with flexible travel options.", to: "/flights" },
   { icon: Hotel, title: "Hotel Booking", desc: "Comfortable stays for every budget, from luxury hotels to affordable rooms.", to: "/hotels" },
@@ -11,11 +13,24 @@ const SERVICES = [
   { icon: Train, title: "Train Booking", desc: "Book comfortable and seamless train travel for India and beyond.", to: "/contact" },
 ];
 
-const IMG_LEFT_1 = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800"; // Airplane
-const IMG_LEFT_2 = "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=800"; // Hotel room
-const IMG_RIGHT = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1000"; // Bali/tropical
+const DEFAULT_IMG_LEFT_1 = "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800"; // Airplane
+const DEFAULT_IMG_LEFT_2 = "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=800"; // Hotel room
+const DEFAULT_IMG_RIGHT = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1000"; // Bali/tropical
 
 export default function ServicesSection({ partners = [] }) {
+  const { siteData } = useSiteContent();
+
+  const headline = siteData?.services_headline || "Your Trusted Partner for Flights, Holidays & Travel";
+  // The headline might have "Trusted Partner" highlighted if it's the default, but if dynamic, we can just render the text
+  // Let's render the text exactly, or split at 'Trusted Partner' if we want to keep the styling, but it's safer to just render the whole text or bold it.
+  
+  const renderHeadline = () => {
+    if (!siteData?.services_headline) {
+      return <>Your <span className="text-accent">Trusted Partner</span> for<br/>Flights, Holidays & Travel</>;
+    }
+    return siteData.services_headline;
+  };
+
   return (
     <section className="py-16 sm:py-24 bg-white dark:bg-slate-900 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -27,20 +42,20 @@ export default function ServicesSection({ partners = [] }) {
               <div className="inline-block bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full mb-6">
                 • Our Services
               </div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-deep-space dark:text-white leading-tight mb-5">
-                Your <span className="text-accent">Trusted Partner</span> for<br/>Flights, Holidays & Travel
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-deep-space dark:text-white leading-tight mb-5 whitespace-pre-wrap">
+                {renderHeadline()}
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-md">
-                FlyEasy helps you book flights, plan vacations, and manage travel with ease. From bookings to support, we make every journey smooth and stress-free.
+              <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-md whitespace-pre-wrap">
+                {siteData?.services_subheadline || "FlyEasy helps you book flights, plan vacations, and manage travel with ease. From bookings to support, we make every journey smooth and stress-free."}
               </p>
             </div>
             
             <div className="grid grid-cols-2 gap-4 mt-8">
               <div className="rounded-2xl overflow-hidden h-32 sm:h-40">
-                <Image src={IMG_LEFT_1} alt="Travel" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image src={siteData?.services_img_left_1 || DEFAULT_IMG_LEFT_1} alt="Travel" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
               <div className="rounded-2xl overflow-hidden h-32 sm:h-40">
-                <Image src={IMG_LEFT_2} alt="Travel 2" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <Image src={siteData?.services_img_left_2 || DEFAULT_IMG_LEFT_2} alt="Travel 2" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
             </div>
           </div>
@@ -48,17 +63,21 @@ export default function ServicesSection({ partners = [] }) {
           {/* Right Top: Large Image with floating card */}
           <div className="relative">
             <div className="rounded-[2.5rem] overflow-hidden h-[300px] sm:h-[450px]">
-              <Image src={IMG_RIGHT} alt="Explore" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              <Image src={siteData?.services_img_right || DEFAULT_IMG_RIGHT} alt="Explore" fittingType="cover" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
             </div>
             
             {/* Overlapping Card */}
             <div className="absolute -bottom-6 -left-4 sm:-left-12 sm:bottom-8 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-float-lg max-w-sm border border-slate-100 dark:border-slate-700">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-deep-space dark:text-white text-lg">Travel stress? Leave it to us</h3>
-                <span className="text-accent font-black text-xl italic leading-none">fly<br/>easy</span>
+                <h3 className="font-bold text-deep-space dark:text-white text-lg">
+                  {siteData?.services_card_title || "Travel stress? Leave it to us"}
+                </h3>
+                <span className="text-accent font-black text-xl italic leading-none whitespace-pre-wrap">
+                  {siteData?.services_card_subtitle ? siteData.services_card_subtitle.replace(" ", "\n") : "fly\neasy"}
+                </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                From affordable flight deals to complete travel assistance, we handle everything so you can enjoy your trip without the hassle.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 whitespace-pre-wrap">
+                {siteData?.services_card_desc || "From affordable flight deals to complete travel assistance, we handle everything so you can enjoy your trip without the hassle."}
               </p>
               <Link to="/contact" className="inline-flex items-center gap-1 text-[10px] font-bold text-deep-space dark:text-white uppercase tracking-wider hover:text-accent dark:hover:text-accent transition-colors">
                 Explore Services <ArrowRight size={14} />

@@ -661,6 +661,14 @@ CREATE TABLE `site_content` (
   `about_show_faqs` tinyint(1) DEFAULT 1,
   `about_show_airlines` tinyint(1) DEFAULT 1,
   `about_show_partners` tinyint(1) DEFAULT 1,
+  `services_headline` text DEFAULT NULL,
+  `services_subheadline` text DEFAULT NULL,
+  `services_card_title` varchar(255) DEFAULT NULL,
+  `services_card_subtitle` varchar(255) DEFAULT NULL,
+  `services_card_desc` text DEFAULT NULL,
+  `services_img_left_1` varchar(255) DEFAULT NULL,
+  `services_img_left_2` varchar(255) DEFAULT NULL,
+  `services_img_right` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -43,7 +43,7 @@ export default function PaymentModal({ booking, onClose }) {
         </DialogHeader>
         {booking && (
           <div className="space-y-4">
-            <div className="bg-slate-50 rounded-2xl p-4 space-y-1.5 text-sm">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 space-y-1.5 text-sm">
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500">Package</span>
                 <span className="font-semibold text-deep-space text-right">{booking.package_title}</span>
@@ -55,7 +55,7 @@ export default function PaymentModal({ booking, onClose }) {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-deep-space">Choose a payment method:</p>
+              <p className="text-sm font-semibold text-deep-space dark:text-white">Choose a payment method:</p>
               {loading ? (
                 <div className="text-sm text-slate-400 py-6 text-center">Loading methods…</div>
               ) : methods.length === 0 ? (
@@ -103,7 +103,7 @@ function PaymentMethodItem({ pm, copied, onCopy }) {
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
           <Icon size={16} className="text-primary" />
         </div>
-        <div className="font-bold text-deep-space text-sm">{pm.label || labels[pm.method_type]}</div>
+        <div className="font-bold text-deep-space dark:text-white text-sm">{pm.label || labels[pm.method_type]}</div>
       </div>
       <div className="space-y-1.5 text-sm">
         {rows.map((r) => (
@@ -111,7 +111,7 @@ function PaymentMethodItem({ pm, copied, onCopy }) {
             <span className="text-slate-400 text-xs">{r.label}</span>
             <button
               onClick={() => onCopy(r.value, pm.id + r.label)}
-              className="flex items-center gap-1.5 font-medium text-deep-space hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 font-medium text-deep-space dark:text-white hover:text-primary dark:hover:text-primary transition-colors"
             >
               {r.value}
               {copied === pm.id + r.label ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} className="text-slate-400" />}

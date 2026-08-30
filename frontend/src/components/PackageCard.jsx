@@ -1,14 +1,30 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star, Clock, MapPin, ArrowRight } from "lucide-react";
-import { Image } from "@/components/ui/image";
+import { Star, Clock, MapPin, ArrowRight, BarChart2, PlusCircle } from "lucide-react";
 import { cn, stripHtml } from "@/lib/utils";
 import FavoriteButton from "@/components/FavoriteButton";
+import { useCompare } from "@/context/CompareContext";
+import { useTrip } from "@/context/TripContext";
 
 export default function PackageCard({ pkg, wide = false }) {
   const discount = pkg.original_price
     ? Math.round(((pkg.original_price - pkg.price) / pkg.original_price) * 100)
     : 0;
+  
+  const { addToCompare } = useCompare();
+  const { addToTrip } = useTrip();
+
+  const handleCompare = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCompare({ type: 'package', id: pkg.id, title: pkg.title, price: pkg.price, image: pkg.image_url, duration: `${pkg.duration_days} Days` });
+  };
+
+  const handleTrip = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToTrip({ type: 'package', id: pkg.id, title: pkg.title, price: pkg.price, image: pkg.image_url });
+  };
 
   return (
     <Link
@@ -33,7 +49,10 @@ export default function PackageCard({ pkg, wide = false }) {
         )}
         <div className="absolute top-4 right-4 flex flex-col gap-2 items-end z-10">
           <FavoriteButton itemId={pkg.id} itemType="package" />
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1 shadow-sm">
+          <button onClick={handleCompare} className="p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-white shadow-sm transition-all" title="Compare">
+            <BarChart2 size={16} />
+          </button>
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1 shadow-sm mt-1">
             <Star size={14} className="fill-amber-400 text-amber-400" />
             <span className="text-xs font-semibold text-slate-800 dark:text-white">{pkg.rating || 4.5}</span>
           </div>
@@ -54,7 +73,7 @@ export default function PackageCard({ pkg, wide = false }) {
           <Clock size={14} className="text-primary" />
           {pkg.duration_days} Days · {pkg.duration_days - 1} Nights
         </div>
-        <div className="flex items-end justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
           <div>
             {pkg.original_price && pkg.original_price > pkg.price && (
               <div className="text-xs text-slate-400 line-through">৳{pkg.original_price.toLocaleString()}</div>
@@ -64,8 +83,13 @@ export default function PackageCard({ pkg, wide = false }) {
               <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> /person</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-primary font-semibold text-sm group-hover:gap-2 transition-all">
-            View <ArrowRight size={16} />
+          <div className="flex items-center gap-2">
+            <button onClick={handleTrip} className="flex items-center gap-1 p-2 px-3 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-semibold" title="Add to Trip">
+              <PlusCircle size={14} /> Trip
+            </button>
+            <div className="flex items-center gap-1 text-primary font-semibold text-sm group-hover:gap-2 transition-all whitespace-nowrap">
+              View <ArrowRight size={16} />
+            </div>
           </div>
         </div>
       </div>

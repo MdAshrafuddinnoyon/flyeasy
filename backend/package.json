@@ -2,6 +2,8 @@
   "name": "flyeasy-backend",
   "version": "1.0.0",
   "description": "FlyEasy REST API backend (Node/Express + MySQL)",
+  "author": "Md Ashraf Uddin Noyon / Developer Team",
+  "license": "UNLICENSED (Proprietary)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,7 +19,8 @@
     "multer": "^2.2.0",
     "mysql2": "^3.11.0",
     "nodemailer": "^9.0.5",
-    "uuid": "^9.0.1"
+    "sslcommerz-lts": "^1.2.0",
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

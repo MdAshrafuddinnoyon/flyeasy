@@ -4,10 +4,14 @@ import { Entities } from "@/lib/api";
 
 
 
+import { useSiteContent } from "@/context/SiteContext";
+
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = React.useRef(null);
+  const { siteData } = useSiteContent();
+  const autoSlideRef = React.useRef(null);
 
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -22,6 +26,30 @@ export default function ReviewsSection() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    // If auto slide is explicitly false, don't start it. Default is true.
+    if (siteData?.reviews_auto_slide === false || reviews.length === 0) {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
+      return;
+    }
+
+    autoSlideRef.current = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        // If reached the end, scroll back to start
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          scrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
+        }
+      }
+    }, 3500);
+
+    return () => {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
+    };
+  }, [siteData?.reviews_auto_slide, reviews.length]);
 
   const list = reviews;
 
