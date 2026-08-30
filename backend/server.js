@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
@@ -15,10 +16,43 @@ const {
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(express.json());
+// ─── Rate Limiting ─────────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
 
-// Security Headers Middleware
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // max 20 login/register attempts per 15min per IP
+  message: { error: 'Too many authentication attempts. Please try again in 15 minutes.' }
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30, // 30 uploads per minute
+  message: { error: 'Upload rate limit exceeded. Please wait.' }
+});
+
+app.use(globalLimiter);
+
+// ─── CORS ──────────────────────────────────────────────────────────────────
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : [];
+
+app.use(cors({
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ─── Security Headers ──────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader('Content-Security-Policy', "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'");
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
@@ -26,29 +60,34 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=()');
+  // Remove fingerprinting headers
+  res.removeHeader('X-Powered-By');
   next();
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }));
 
-app.get('/api/fix-urls', async (req, res) => {
+// ─── Fix URLs (ADMIN PROTECTED) ────────────────────────────────────────────
+app.get('/api/fix-urls', require('./middleware/auth').authRequired, require('./middleware/auth').adminRequired, async (req, res) => {
   try {
     const pool = require('./config/db');
-    const liveUrl = 'https://flyeasytourism.com';
+    const liveUrl = process.env.SITE_URL || `https://flyeasytourism.com`;
     const oldUrl = 'http://localhost:4000';
     const queries = [
-      `UPDATE site_content SET favicon_url = REPLACE(favicon_url, '${oldUrl}', '${liveUrl}'), logo_light_url = REPLACE(logo_light_url, '${oldUrl}', '${liveUrl}'), logo_dark_url = REPLACE(logo_dark_url, '${oldUrl}', '${liveUrl}'), email_logo_url = REPLACE(email_logo_url, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE site_content SET favicon_url = REPLACE(favicon_url, '${oldUrl}', '${liveUrl}'), logo_light_url = REPLACE(logo_light_url, '${oldUrl}', '${liveUrl}'), logo_dark_url = REPLACE(logo_dark_url, '${oldUrl}', '${liveUrl}'), email_logo_url = REPLACE(email_logo_url, '${oldUrl}', '${liveUrl}'), hero_image_url = REPLACE(hero_image_url, '${oldUrl}', '${liveUrl}')`,
       `UPDATE packages SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}'), gallery = REPLACE(gallery, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE hotels SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}'), gallery = REPLACE(gallery, '${oldUrl}', '${liveUrl}')`,
       `UPDATE team_members SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}')`,
       `UPDATE airlines SET logo_url = REPLACE(logo_url, '${oldUrl}', '${liveUrl}')`,
-      `UPDATE partners SET logo_url = REPLACE(logo_url, '${oldUrl}', '${liveUrl}')`
+      `UPDATE partners SET logo_url = REPLACE(logo_url, '${oldUrl}', '${liveUrl}')`,
+      `UPDATE promotions SET image_url = REPLACE(image_url, '${oldUrl}', '${liveUrl}')`
     ];
     for (const q of queries) {
-      await pool.query(q).catch(e => console.error(e));
+      await pool.query(q).catch(e => console.error('fix-url error:', e.message));
     }
-    res.send("<h1>URLs Fixed!</h1><p>All localhost images have been updated to live URLs. <a href='/'>Go to website</a></p>");
+    res.json({ success: true, message: 'All localhost URLs replaced with live domain.' });
   } catch (err) {
-    res.status(500).send("Error: " + err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -67,7 +106,7 @@ try {
   }
 } catch (e) {}
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/site-content', siteContentRoutes);
 app.use('/api/email', emailRoutes);
@@ -90,7 +129,7 @@ app.use('/api/pages', pages);
 app.use('/api/email-templates', email_templates);
 app.use('/api/newsletter-subscribers', newsletter_subscribers);
 app.use('/api/partners', partners);
-app.use('/api/upload', require('./routes/upload'));
+app.use('/api/upload', uploadLimiter, require('./routes/upload'));
 app.use('/api/payment', paymentRoutes);
 
 app.get('/api/newsletter-export', require('./middleware/auth').authRequired, require('./middleware/auth').adminRequired, async (req, res) => {

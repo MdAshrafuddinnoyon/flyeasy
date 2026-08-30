@@ -1,9 +1,11 @@
 {
   "name": "flyeasy-backend",
   "version": "1.0.0",
-  "description": "FlyEasy REST API backend (Node/Express + MySQL)",
-  "author": "Md Ashraf Uddin Noyon / Developer Team",
-  "license": "UNLICENSED (Proprietary)",
+  "description": "FlyEasy Tourism REST API – Developed by WebSearchBD",
+  "author": "WebSearchBD <info@websearchbd.com> (https://websearchbd.com)",
+  "license": "UNLICENSED",
+  "private": true,
+  "copyright": "© 2026 WebSearchBD. All rights reserved.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Entities } from "@/lib/api";
+import { useSiteContent } from "@/context/SiteContext";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Newsletter() {
+  const { siteData } = useSiteContent();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success, error
   const [msg, setMsg] = useState("");
@@ -88,7 +90,7 @@ export default function Newsletter() {
           {/* Mobile: Below the text */}
           <div className="md:hidden relative w-full h-48 rounded-b-[2rem] mt-4 flex justify-end items-end">
             <img 
-              src="/images/newsletter-plane-transparent.png" 
+              src={siteData?.newsletter_bg_image_url || "/images/newsletter-plane-transparent.png"} 
               alt="Airplane" 
               className="absolute -right-4 -bottom-4 w-[90%] object-contain"
             />
@@ -97,7 +99,7 @@ export default function Newsletter() {
           {/* Desktop: Breaking out of the container on top, right, bottom */}
           <div className="absolute top-1/2 right-[-5%] -translate-y-[45%] w-1/2 lg:w-[50%] h-[130%] pointer-events-none hidden md:block z-20">
             <img 
-              src="/images/newsletter-plane-transparent.png" 
+              src={siteData?.newsletter_bg_image_url || "/images/newsletter-plane-transparent.png"} 
               alt="Airplane" 
               className="w-full h-full object-contain scale-125"
               style={{ filter: 'drop-shadow(-10px 15px 15px rgba(0,0,0,0.2))' }}

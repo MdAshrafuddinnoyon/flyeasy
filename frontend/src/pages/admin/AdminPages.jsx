@@ -230,6 +230,18 @@ export default function AdminPages() {
                 </div>
               </div>
             </div>
+
+            <div className="mt-12 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-deep-space dark:text-white mb-4">Home Page: Newsletter Section</h3>
+              <div className="space-y-4 max-w-sm">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-deep-space dark:text-slate-200">Newsletter Floating Image (Airplane)</label>
+                  <ImagePicker value={siteData.newsletter_bg_image_url || ""} onChange={(v) => setSiteDataState(prev => ({...prev, newsletter_bg_image_url: v}))} />
+                  <p className="text-xs text-slate-500">Upload a transparent PNG for best results.</p>
+                </div>
+              </div>
+            </div>
+
             <div className="pt-4">
               <Button onClick={handleSaveSite} disabled={savingSite} className="bg-primary hover:bg-primary/90 px-8 py-2.5">
                 {savingSite ? <><Loader2 size={18} className="animate-spin mr-2" /> Saving...</> : <><Save size={18} className="mr-2" /> Save Covers</>}

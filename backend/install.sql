@@ -669,6 +669,7 @@ CREATE TABLE `site_content` (
   `services_img_left_1` varchar(255) DEFAULT NULL,
   `services_img_left_2` varchar(255) DEFAULT NULL,
   `services_img_right` varchar(255) DEFAULT NULL,
+  `newsletter_bg_image_url` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

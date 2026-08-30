@@ -24,7 +24,8 @@ const CONTENT_COLUMNS = [
   'cta_bg_image_url', 'process_bg_image_url', 'home_hero_type', 'hero_video_url', 'hero_border_radius',
   'not_found_bg_url', 'reviews_auto_slide', 'rewards_active',
   'services_headline', 'services_subheadline', 'services_card_title', 'services_card_subtitle', 'services_card_desc',
-  'services_img_left_1', 'services_img_left_2', 'services_img_right'
+  'services_img_left_1', 'services_img_left_2', 'services_img_right',
+  'newsletter_bg_image_url'
 ];
 
 // Site content is a singleton row — GET returns the first (only) row, creating a default if missing.
